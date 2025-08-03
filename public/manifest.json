@@ -1,0 +1,21 @@
+{
+  "name": "EnviroDash",
+  "short_name": "EnviroDash",
+  "description": "A real-time environmental monitoring dashboard that receives IoT sensor data and displays it beautifully.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121E29",
+  "theme_color": "#121E29",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
