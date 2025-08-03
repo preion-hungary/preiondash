@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const sensorsRef = ref(db, 'sensors');
+    
     const unsubscribe = onValue(sensorsRef, (snapshot) => {
       const updatedSensors: SensorData[] = [];
       
@@ -27,8 +29,6 @@ export default function DashboardPage() {
         Object.keys(devicesData).forEach((deviceId) => {
           const deviceReadings = devicesData[deviceId];
           
-          // The timestamps are keys, so we get all of them and find the latest one.
-          // We must treat them as numbers for correct sorting.
           const latestTimestampKey = Object.keys(deviceReadings).sort((a, b) => Number(b) - Number(a))[0];
 
           if (latestTimestampKey) {
@@ -48,7 +48,6 @@ export default function DashboardPage() {
       
       setSensors(updatedSensors);
 
-      // Create some sample chart data based on latest readings for demo
       if (updatedSensors.length > 0) {
         const latestSensor = updatedSensors[updatedSensors.length-1];
         setChartData(Array.from({ length: 12 }, (_, i) => ({
@@ -64,7 +63,9 @@ export default function DashboardPage() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+        unsubscribe();
+    }
   }, []);
 
 
