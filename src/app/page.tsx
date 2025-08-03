@@ -24,9 +24,12 @@ export default function DashboardPage() {
         
         Object.keys(devicesData).forEach((deviceId) => {
           const deviceReadings = devicesData[deviceId];
-          const latestTimestamp = Object.keys(deviceReadings).sort().pop();
-          if (latestTimestamp) {
-            const latestReading: RtdbSensorData = deviceReadings[latestTimestamp];
+          
+          // Sort timestamps numerically to get the latest one
+          const latestTimestampKey = Object.keys(deviceReadings).sort((a, b) => Number(b) - Number(a))[0];
+
+          if (latestTimestampKey) {
+            const latestReading: RtdbSensorData = deviceReadings[latestTimestampKey];
             const mockSensor = SENSOR_DATA.find(s => s.deviceId === deviceId) || SENSOR_DATA[0];
 
             updatedSensors.push({
