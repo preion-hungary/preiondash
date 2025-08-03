@@ -1,34 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardSidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Header } from "@/components/dashboard/header";
 import { DataCard } from "@/components/dashboard/data-card";
 import { TrendChart } from "@/components/dashboard/trend-chart";
-import { CHART_DATA } from "@/lib/mock-data";
+import { CHART_DATA, SENSOR_DATA } from "@/lib/mock-data";
 import type { SensorData } from "@/lib/types";
 import { BarChart, Cpu, MapPin } from "lucide-react";
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export default function DashboardPage() {
-  const [sensors, setSensors] = useState<SensorData[]>([]);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "sensors"), (snapshot) => {
-      const sensorData = snapshot.docs.map(
-        (doc) =>
-          ({
-            deviceId: doc.id,
-            ...doc.data(),
-          } as SensorData)
-      );
-      setSensors(sensorData);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const [sensors, setSensors] = useState<SensorData[]>(SENSOR_DATA);
 
   return (
     <SidebarProvider>
