@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -12,11 +12,12 @@ const firebaseConfig = {
   authDomain: "envirodash.firebaseapp.com",
   measurementId: "",
   messagingSenderId: "456872698572",
+  databaseURL: "https://envirodash-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+const db = getDatabase(app);
 const auth = getAuth(app);
 
 export { app, db, auth };

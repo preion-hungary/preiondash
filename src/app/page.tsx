@@ -1,17 +1,57 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardSidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Header } from "@/components/dashboard/header";
 import { DataCard } from "@/components/dashboard/data-card";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { CHART_DATA, SENSOR_DATA } from "@/lib/mock-data";
-import type { SensorData } from "@/lib/types";
+import type { RtdbSensorData, SensorData } from "@/lib/types";
 import { BarChart, Cpu, MapPin } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
 
 export default function DashboardPage() {
-  const [sensors, setSensors] = useState<SensorData[]>(SENSOR_DATA);
+  const [sensors, setSensors] = useState<SensorData[]>([]);
+
+  useEffect(() => {
+    const sensorsRef = ref(db, 'sensors');
+    const unsubscribe = onValue(sensorsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const devicesData = snapshot.val();
+        const updatedSensors: SensorData[] = [];
+        
+        Object.keys(devicesData).forEach((deviceId) => {
+          const deviceReadings = devicesData[deviceId];
+          const latestTimestamp = Object.keys(deviceReadings).sort().pop();
+          if (latestTimestamp) {
+            const latestReading: RtdbSensorData = deviceReadings[latestTimestamp];
+            const mockSensor = SENSOR_DATA.find(s => s.deviceId === deviceId) || SENSOR_DATA[0];
+
+            updatedSensors.push({
+              deviceId: latestReading.deviceId,
+              timestamp: latestReading.timestamp,
+              temperature: latestReading.temp,
+              humidity: latestReading.hum,
+              hydrogen: mockSensor.hydrogen, // Using mock hydrogen
+              hydrogenVoltage: mockSensor.hydrogenVoltage,
+              safetyStatus: mockSensor.safetyStatus,
+              location: mockSensor.location,
+            });
+          }
+        });
+
+        setSensors(updatedSensors);
+      } else {
+        // Fallback to mock data if no data in RTDB
+        setSensors(SENSOR_DATA);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   return (
     <SidebarProvider>
