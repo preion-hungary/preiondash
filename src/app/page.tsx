@@ -30,7 +30,7 @@ export default function DashboardPage() {
 
           if (latestTimestampKey) {
             const latestReading: RtdbSensorData = deviceReadings[latestTimestampKey];
-            const mockSensor = SENSOR_DATA.find(s => s.deviceId === deviceId) || SENSOR_DATA[0];
+            const mockSensor = SENSOR_DATA[0]; // Use a consistent mock for location and H2 values
 
             updatedSensors.push({
               deviceId: latestReading.deviceId,
