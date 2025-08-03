@@ -13,14 +13,14 @@ import { db } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
 
 export default function DashboardPage() {
-  const [sensors, setSensors] = useState<SensorData[]>(SENSOR_DATA);
+  const [sensors, setSensors] = useState<SensorData[]>([]);
 
   useEffect(() => {
     const sensorsRef = ref(db, 'sensors');
     const unsubscribe = onValue(sensorsRef, (snapshot) => {
+      const updatedSensors: SensorData[] = [];
       if (snapshot.exists()) {
         const devicesData = snapshot.val();
-        const updatedSensors: SensorData[] = [];
         
         Object.keys(devicesData).forEach((deviceId) => {
           const deviceReadings = devicesData[deviceId];
@@ -41,16 +41,8 @@ export default function DashboardPage() {
             });
           }
         });
-        
-        if (updatedSensors.length > 0) {
-            setSensors(updatedSensors);
-        } else {
-            setSensors(SENSOR_DATA);
-        }
-      } else {
-        // Fallback to mock data if no data in RTDB
-        setSensors(SENSOR_DATA);
       }
+      setSensors(updatedSensors);
     });
 
     return () => unsubscribe();
