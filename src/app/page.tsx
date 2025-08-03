@@ -6,33 +6,28 @@ import { DashboardSidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Header } from "@/components/dashboard/header";
 import { DataCard } from "@/components/dashboard/data-card";
 import { TrendChart } from "@/components/dashboard/trend-chart";
-import { SENSOR_DATA, CHART_DATA } from "@/lib/mock-data";
-import type { SensorData, TrendChartData } from "@/lib/types";
+import { CHART_DATA } from "@/lib/mock-data";
+import type { SensorData } from "@/lib/types";
 import { BarChart, Cpu, MapPin } from "lucide-react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function DashboardPage() {
-  const [sensors, setSensors] = useState<SensorData[]>(SENSOR_DATA);
+  const [sensors, setSensors] = useState<SensorData[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSensors((prevSensors) =>
-        prevSensors.map((sensor) => ({
-          ...sensor,
-          temperature: parseFloat(
-            (sensor.temperature + (Math.random() - 0.5) * 0.2).toFixed(1)
-          ),
-          humidity: parseFloat(
-            (sensor.humidity + (Math.random() - 0.5) * 0.5).toFixed(1)
-          ),
-          hydrogen: Math.max(
-            0,
-            sensor.hydrogen + Math.floor((Math.random() - 0.45) * 20)
-          ),
-        }))
+    const unsubscribe = onSnapshot(collection(db, "sensors"), (snapshot) => {
+      const sensorData = snapshot.docs.map(
+        (doc) =>
+          ({
+            deviceId: doc.id,
+            ...doc.data(),
+          } as SensorData)
       );
-    }, 2000);
+      setSensors(sensorData);
+    });
 
-    return () => clearInterval(interval);
+    return () => unsubscribe();
   }, []);
 
   return (
