@@ -4,9 +4,7 @@ export interface SensorData {
   temperature: number;
   humidity: number;
   hydrogen: number;
-  hydrogenVoltage: number;
-  safetyStatus: "NORMAL" | "CAUTION" | "DANGER";
-  location: string;
+  safetyStatus: "NORMAL" | "CAUTION" | "DANGER" | "ALERT!" | "WARNING";
 }
 
 export interface RtdbSensorData {
@@ -15,7 +13,7 @@ export interface RtdbSensorData {
   temp: number;
   hum: number;
   h2: number;
-  status: string;
+  status: "NORMAL" | "CAUTION" | "DANGER" | "ALERT!" | "WARNING";
 }
 
 
