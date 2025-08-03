@@ -25,7 +25,7 @@ export function Header() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.setAttribute("href", url);
-    a.setAttribute("download", "envirodash_data.csv");
+    a.setAttribute("download", "preionpro_data.csv");
     a.style.visibility = "hidden";
     document.body.appendChild(a);
     a.click();
@@ -37,7 +37,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         <SidebarTrigger className="md:hidden" />
         <h1 className="text-2xl font-bold font-headline text-white">
-          EnviroDash
+          Preion Pro
         </h1>
       </div>
       <Button variant="outline" size="sm" onClick={handleExport}>

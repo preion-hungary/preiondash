@@ -2,7 +2,7 @@ import type { SensorData, TrendChartData } from "./types";
 
 export const SENSOR_DATA: SensorData[] = [
   {
-    deviceId: "PREION_001",
+    deviceId: "PREIONPRO_001",
     timestamp: 1634567890,
     temperature: 23.5,
     humidity: 65.2,
@@ -12,7 +12,7 @@ export const SENSOR_DATA: SensorData[] = [
     location: "Building A - Room 101",
   },
   {
-    deviceId: "PREION_002",
+    deviceId: "PREIONPRO_002",
     timestamp: 1634567990,
     temperature: 24.1,
     humidity: 66.8,

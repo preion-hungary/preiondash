@@ -24,8 +24,8 @@ export function DashboardSidebarNav() {
     <>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center font-bold text-primary-foreground text-lg font-headline">E</div>
-            <span className="font-headline text-lg">EnviroDash</span>
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center font-bold text-primary-foreground text-lg font-headline">P</div>
+            <span className="font-headline text-lg">Preion Pro</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

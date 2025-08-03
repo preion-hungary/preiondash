@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "EnviroDash",
+  title: "Preion Pro",
   description: "A real-time environmental monitoring dashboard.",
   manifest: "/manifest.json",
 };
