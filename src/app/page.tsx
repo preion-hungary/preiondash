@@ -10,10 +10,10 @@ import { CHART_DATA, SENSOR_DATA } from "@/lib/mock-data";
 import type { RtdbSensorData, SensorData } from "@/lib/types";
 import { BarChart, Cpu, MapPin } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { ref, onValue, query, orderByChild, limitToLast } from "firebase/database";
+import { ref, onValue } from "firebase/database";
 
 export default function DashboardPage() {
-  const [sensors, setSensors] = useState<SensorData[]>([]);
+  const [sensors, setSensors] = useState<SensorData[]>(SENSOR_DATA);
 
   useEffect(() => {
     const sensorsRef = ref(db, 'sensors');
@@ -41,8 +41,12 @@ export default function DashboardPage() {
             });
           }
         });
-
-        setSensors(updatedSensors);
+        
+        if (updatedSensors.length > 0) {
+            setSensors(updatedSensors);
+        } else {
+            setSensors(SENSOR_DATA);
+        }
       } else {
         // Fallback to mock data if no data in RTDB
         setSensors(SENSOR_DATA);
