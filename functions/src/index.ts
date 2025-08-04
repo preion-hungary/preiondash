@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
-const SECONDS_TO_KEEP = 120;
+const SECONDS_TO_KEEP = 2592000; // 30 days in seconds
 
 exports.trimSensorData = functions.database
   .ref("/sensors/{deviceId}/{timestamp}")
