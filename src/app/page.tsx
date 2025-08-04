@@ -23,7 +23,7 @@ export default function DashboardPage() {
     const devicesRef = ref(db, 'sensors');
     const unsubscribes: (() => void)[] = [];
 
-    get(devicesRef).then((snapshot) => {
+    const initialLoad = get(devicesRef).then((snapshot) => {
       if (snapshot.exists()) {
         const deviceIds = Object.keys(snapshot.val());
 
@@ -50,7 +50,7 @@ export default function DashboardPage() {
 
               if (latestReading) {
                 const chartData = readingsArray.map((reading) => {
-                   const timeLabel = new Date(reading.timestamp).toLocaleTimeString();
+                   const timeLabel = new Date(reading.timestamp).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' });
                    return {
                      time: timeLabel,
                      temperature: reading.temp,
@@ -81,18 +81,15 @@ export default function DashboardPage() {
                 });
               }
             }
-            setLoading(false);
           }, (error) => {
               console.error(`Firebase read failed for device ${deviceId}: `, error);
-              setLoading(false);
           });
           unsubscribes.push(unsubscribe);
         });
-      } else {
-        setLoading(false);
       }
     }).catch(error => {
         console.error("Firebase device list read failed: ", error);
+    }).finally(() => {
         setLoading(false);
     });
 
