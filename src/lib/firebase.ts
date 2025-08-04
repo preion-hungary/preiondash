@@ -12,7 +12,7 @@ const firebaseConfig = {
   authDomain: "envirodash.firebaseapp.com",
   measurementId: "",
   messagingSenderId: "456872698572",
-  databaseURL: "https://envirodash-default-rtdb.firebaseio.com"
+  databaseURL: "https://envirodash-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 // Initialize Firebase

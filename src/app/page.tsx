@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,64 +9,97 @@ import { TrendChart } from "@/components/dashboard/trend-chart";
 import type { RtdbSensorData, SensorData, TrendChartData } from "@/lib/types";
 import { BarChart, Cpu } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, get, query, limitToLast, orderByChild } from "firebase/database";
+
+interface SensorDisplayData extends SensorData {
+  chartData: TrendChartData[];
+}
 
 export default function DashboardPage() {
-  const [sensors, setSensors] = useState<SensorData[]>([]);
-  const [chartData, setChartData] = useState<TrendChartData[]>([]);
+  const [sensors, setSensors] = useState<SensorDisplayData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const sensorsRef = ref(db, 'sensors');
-    
-    const unsubscribe = onValue(sensorsRef, (snapshot) => {
-      const updatedSensors: SensorData[] = [];
-      
+    const devicesRef = ref(db, 'sensors');
+    const unsubscribes: (() => void)[] = [];
+
+    get(devicesRef).then((snapshot) => {
       if (snapshot.exists()) {
-        const devicesData = snapshot.val();
-        
-        Object.keys(devicesData).forEach((deviceId) => {
-          const deviceReadings = devicesData[deviceId];
-          
-          const latestTimestampKey = Object.keys(deviceReadings).sort((a, b) => Number(b) - Number(a))[0];
+        const deviceIds = Object.keys(snapshot.val());
 
-          if (latestTimestampKey) {
-            const latestReading: RtdbSensorData = deviceReadings[latestTimestampKey];
-            
-            updatedSensors.push({
-              deviceId: latestReading.deviceId,
-              timestamp: latestReading.timestamp,
-              temperature: latestReading.temp,
-              humidity: latestReading.hum,
-              hydrogen: latestReading.h2,
-              safetyStatus: latestReading.status,
-            });
-          }
+        if (deviceIds.length === 0) {
+            setLoading(false);
+            return;
+        }
+
+        deviceIds.forEach(deviceId => {
+          const deviceReadingsRef = ref(db, `sensors/${deviceId}`);
+          const recentReadingsQuery = query(
+            deviceReadingsRef,
+            orderByChild('timestamp'),
+            limitToLast(12)
+          );
+
+          const unsubscribe = onValue(recentReadingsQuery, (readingSnapshot) => {
+            if (readingSnapshot.exists()) {
+              const readingsData = readingSnapshot.val();
+              const readingsArray = Object.values<RtdbSensorData>(readingsData)
+                .sort((a, b) => a.timestamp - b.timestamp);
+
+              const latestReading = readingsArray[readingsArray.length - 1];
+
+              if (latestReading) {
+                const chartData = readingsArray.map((reading) => {
+                   const timeLabel = new Date(reading.timestamp).toLocaleTimeString();
+                   return {
+                     time: timeLabel,
+                     temperature: reading.temp,
+                     humidity: reading.hum,
+                     hydrogen: 0,
+                   };
+                });
+
+                const sensorDisplayData: SensorDisplayData = {
+                  deviceId: latestReading.deviceId,
+                  timestamp: latestReading.timestamp,
+                  temperature: latestReading.temp,
+                  humidity: latestReading.hum,
+                  hydrogen: 0,
+                  safetyStatus: latestReading.status,
+                  chartData: chartData,
+                };
+
+                setSensors(prevSensors => {
+                  const existingSensorIndex = prevSensors.findIndex(s => s.deviceId === deviceId);
+                  const newSensors = [...prevSensors];
+                  if (existingSensorIndex > -1) {
+                    newSensors[existingSensorIndex] = sensorDisplayData;
+                  } else {
+                    newSensors.push(sensorDisplayData);
+                  }
+                  return newSensors.sort((a, b) => a.deviceId.localeCompare(b.deviceId));
+                });
+              }
+            }
+            setLoading(false);
+          }, (error) => {
+              console.error(`Firebase read failed for device ${deviceId}: `, error);
+              setLoading(false);
+          });
+          unsubscribes.push(unsubscribe);
         });
+      } else {
+        setLoading(false);
       }
-      
-      setSensors(updatedSensors);
-
-      if (updatedSensors.length > 0) {
-        const latestSensor = updatedSensors[updatedSensors.length-1];
-        setChartData(Array.from({ length: 12 }, (_, i) => ({
-            time: `${String(i*2).padStart(2, '0')}:00`,
-            temperature: parseFloat((latestSensor.temperature - 2 + Math.random() * 4).toFixed(1)),
-            humidity: parseFloat((latestSensor.humidity - 5 + Math.random() * 10).toFixed(1)),
-            hydrogen: Math.floor(latestSensor.hydrogen * (0.8 + Math.random() * 0.4)),
-        })));
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error("Firebase read failed: ", error);
-      setLoading(false);
+    }).catch(error => {
+        console.error("Firebase device list read failed: ", error);
+        setLoading(false);
     });
 
     return () => {
-        unsubscribe();
-    }
+      unsubscribes.forEach(unsub => unsub());
+    };
   }, []);
-
 
   return (
     <SidebarProvider>
@@ -80,13 +112,6 @@ export default function DashboardPage() {
           <main className="mt-8">
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sensors.map((sensor) => {
-                const hydrogenStatus =
-                  sensor.hydrogen > 9000
-                    ? "DANGER"
-                    : sensor.hydrogen > 7500
-                    ? "CAUTION"
-                    : "NORMAL";
-
                 return (
                   <React.Fragment key={sensor.deviceId}>
                     <div className="lg:col-span-2 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
@@ -110,12 +135,6 @@ export default function DashboardPage() {
                           unit="%"
                           status="NORMAL"
                         />
-                        <DataCard
-                          title="Hydrogen"
-                          value={sensor.hydrogen}
-                          unit="ppm"
-                          status={hydrogenStatus}
-                        />
                       </div>
                     </div>
                      <div className="lg:col-span-1 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col">
@@ -124,7 +143,7 @@ export default function DashboardPage() {
                            Data Trends
                         </h3>
                         <div className="flex-grow">
-                            <TrendChart data={chartData} />
+                            <TrendChart data={sensor.chartData} />
                         </div>
                     </div>
                   </React.Fragment>
