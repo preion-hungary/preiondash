@@ -50,7 +50,7 @@ export default function DashboardPage() {
 
               if (latestReading) {
                 const chartData = readingsArray.map((reading) => {
-                   const timeLabel = new Date(reading.timestamp).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' });
+                   const timeLabel = new Date(reading.timestamp * 1000).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' });
                    return {
                      time: timeLabel,
                      temperature: reading.temp,
