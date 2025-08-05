@@ -5,8 +5,9 @@ import {
   SidebarProvider,
   Sidebar,
   SidebarInset,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { DashboardSidebarNav } from "@/components/dashboard/sidebar-nav";
+import { DashboardSidebarNav, MobileBottomNav } from "@/components/dashboard/sidebar-nav";
 import { Header } from "@/components/dashboard/header";
 import { DataCard } from "@/components/dashboard/data-card";
 import { TrendChart } from "@/components/dashboard/trend-chart";
@@ -25,17 +26,19 @@ import {
 } from "firebase/database";
 import {
   TimeRange,
-  TimeRangeSelector,
 } from "@/components/dashboard/time-range-selector";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SensorDisplayData extends SensorData {
   chartData: TrendChartData[];
 }
 
-export default function DashboardPage() {
+
+function DashboardContent() {
   const [sensors, setSensors] = useState<SensorDisplayData[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setLoading(true);
@@ -78,7 +81,7 @@ export default function DashboardPage() {
           const readingsQuery = query(
             deviceReadingsRef,
             orderByChild("timestamp"),
-            startAt(startTime/1000)
+            startAt(startTime / 1000)
           );
 
           const readingSnapshot = await get(readingsQuery);
@@ -96,6 +99,9 @@ export default function DashboardPage() {
           const chartData = readingsArray.map((reading) => ({
             time: new Date(reading.timestamp * 1000).toLocaleTimeString("en-GB", {
               timeZone: "Europe/London",
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
             }),
             temperature: reading.temp,
             humidity: reading.hum,
@@ -161,28 +167,26 @@ export default function DashboardPage() {
         });
     });
 
-
     return () => {
       unsubscribes.forEach(unsub => unsub());
     }
 
   }, [timeRange]);
 
-
   return (
-    <SidebarProvider>
+    <>
       <Sidebar>
         <DashboardSidebarNav />
       </Sidebar>
       <SidebarInset>
-        <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto">
+        <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto pb-20 md:pb-8">
           <Header timeRange={timeRange} onTimeRangeChange={setTimeRange} />
           <main className="mt-8">
-            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sensors.map((sensor) => {
                 return (
                   <React.Fragment key={sensor.deviceId}>
-                    <div className="lg:col-span-2 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
+                    <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
                       <h3 className="text-lg font-headline flex items-center gap-2">
                         <Cpu className="w-5 h-5 text-primary" />
                         {sensor.deviceId}
@@ -190,22 +194,16 @@ export default function DashboardPage() {
                       <p className="text-sm text-muted-foreground italic">
                         Status: {sensor.safetyStatus}
                       </p>
-                      <div className="grid grid-cols-2 gap-4 flex-grow">
-                        <DataCard
-                          title="Temperature"
-                          value={sensor.temperature}
-                          unit="°C"
-                          status="NORMAL"
-                        />
-                        <DataCard
-                          title="Humidity"
-                          value={sensor.humidity}
-                          unit="%"
-                          status="NORMAL"
+                      <div className="flex-grow">
+                         <DataCard
+                          temperature={sensor.temperature}
+                          humidity={sensor.humidity}
+                          tempStatus="NORMAL"
+                          humStatus="NORMAL"
                         />
                       </div>
                     </div>
-                    <div className="lg:col-span-1 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col">
+                    <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col">
                       <h3 className="text-lg font-headline flex items-center gap-2 mb-4">
                         <BarChart className="w-5 h-5 text-primary" />
                         Data Trends
@@ -232,7 +230,17 @@ export default function DashboardPage() {
             )}
           </main>
         </div>
+        {isMobile && <MobileBottomNav />}
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
+}
+
+
+export default function DashboardPage() {
+  return (
+    <SidebarProvider>
+      <DashboardContent />
+    </SidebarProvider>
+  )
 }
