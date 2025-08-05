@@ -40,7 +40,6 @@ export default function DashboardPage() {
   useEffect(() => {
     setLoading(true);
     const devicesRef = ref(db, "sensors");
-    const unsubscribes: (() => void)[] = [];
 
     const fetchInitialData = async () => {
       try {
@@ -57,20 +56,18 @@ export default function DashboardPage() {
           const now = Date.now();
           let startTime = 0;
 
-          const nowSeconds = Math.floor(now / 1000);
-
           switch (timeRange) {
             case "1h":
-              startTime = nowSeconds - 3600;
+              startTime = now - 3600 * 1000;
               break;
             case "24h":
-              startTime = nowSeconds - 86400;
+              startTime = now - 86400 * 1000;
               break;
             case "7d":
-              startTime = nowSeconds - 604800;
+              startTime = now - 604800 * 1000;
               break;
             case "30d":
-              startTime = nowSeconds - 2592000;
+              startTime = now - 2592000 * 1000;
               break;
             case "all":
             default:
@@ -97,54 +94,12 @@ export default function DashboardPage() {
           const latestReading = readingsArray[readingsArray.length - 1];
 
           const chartData = readingsArray.map((reading) => ({
-            time: new Date(reading.timestamp * 1000).toLocaleTimeString("en-GB", {
+            time: new Date(reading.timestamp).toLocaleTimeString("en-GB", {
               timeZone: "Europe/London",
             }),
             temperature: reading.temp,
             humidity: reading.hum,
           }));
-          
-          const lastTimestamp = latestReading.timestamp;
-
-          const newReadingsQuery = query(
-            deviceReadingsRef,
-            orderByChild("timestamp"),
-            startAt(lastTimestamp + 1)
-          );
-
-          const unsubscribe = onChildAdded(newReadingsQuery, (newReadingSnapshot) => {
-            if (newReadingSnapshot.exists()) {
-              const newReading: RtdbSensorData = newReadingSnapshot.val();
-              
-              setSensors((prevSensors) => {
-                return prevSensors.map((sensor) => {
-                  if (sensor.deviceId === deviceId) {
-                    const newChartData = {
-                      time: new Date(newReading.timestamp * 1000).toLocaleTimeString("en-GB", {
-                        timeZone: "Europe/London",
-                      }),
-                      temperature: newReading.temp,
-                      humidity: newReading.hum,
-                    };
-                    
-                    const updatedChartData = [...sensor.chartData, newChartData].slice(-1000); // Keep last 1000 points
-                    
-                    return {
-                      ...sensor,
-                      temperature: newReading.temp,
-                      humidity: newReading.hum,
-                      safetyStatus: newReading.status,
-                      timestamp: newReading.timestamp,
-                      chartData: updatedChartData,
-                    };
-                  }
-                  return sensor;
-                });
-              });
-            }
-          });
-          
-          unsubscribes.push(unsubscribe);
 
           return {
             deviceId: latestReading.deviceId,
@@ -167,13 +122,59 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-    
+
     fetchInitialData();
+  }, [timeRange]);
+
+  useEffect(() => {
+    const devicesRef = ref(db, "sensors");
+    const unsubscribes: (() => void)[] = [];
+
+    const setupRealtimeListeners = async () => {
+      const deviceListSnapshot = await get(devicesRef);
+      if (!deviceListSnapshot.exists()) {
+        return;
+      }
+      const deviceIds = Object.keys(deviceListSnapshot.val());
+
+      deviceIds.forEach(deviceId => {
+        const deviceReadingsRef = ref(db, `sensors/${deviceId}`);
+        const realtimeQuery = query(deviceReadingsRef, limitToLast(1));
+        
+        const unsubscribe = onChildAdded(realtimeQuery, (snapshot) => {
+          if (snapshot.exists()) {
+            const newReading: RtdbSensorData = snapshot.val();
+            
+            setSensors(prevSensors => {
+              const sensorExists = prevSensors.some(s => s.deviceId === deviceId);
+              if (!sensorExists) return prevSensors;
+
+              return prevSensors.map(sensor => {
+                if (sensor.deviceId === deviceId) {
+                  // Only update card data, not chart data
+                  return {
+                    ...sensor,
+                    temperature: newReading.temp,
+                    humidity: newReading.hum,
+                    safetyStatus: newReading.status,
+                    timestamp: newReading.timestamp,
+                  };
+                }
+                return sensor;
+              });
+            });
+          }
+        });
+        unsubscribes.push(unsubscribe);
+      });
+    }
+
+    setupRealtimeListeners();
 
     return () => {
-      unsubscribes.forEach((unsub) => unsub());
-    };
-  }, [timeRange]);
+      unsubscribes.forEach(unsub => unsub());
+    }
+  }, []);
 
   return (
     <SidebarProvider>
