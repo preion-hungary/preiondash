@@ -186,7 +186,7 @@ function DashboardContent() {
               {sensors.map((sensor) => {
                 return (
                   <React.Fragment key={sensor.deviceId}>
-                    <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
+                    <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
                       <h3 className="text-lg font-headline flex items-center gap-2">
                         <Cpu className="w-5 h-5 text-primary" />
                         {sensor.deviceId}
@@ -203,7 +203,7 @@ function DashboardContent() {
                         />
                       </div>
                     </div>
-                    <div className="md:col-span-2 lg:col-span-1 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col">
+                    <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col">
                       <h3 className="text-lg font-headline flex items-center gap-2 mb-4">
                         <BarChart className="w-5 h-5 text-primary" />
                         Data Trends
