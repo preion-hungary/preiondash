@@ -102,7 +102,6 @@ export default function DashboardPage() {
             }),
             temperature: reading.temp,
             humidity: reading.hum,
-            hydrogen: reading.h2,
           }));
           
           const lastTimestamp = latestReading.timestamp;
@@ -126,7 +125,6 @@ export default function DashboardPage() {
                       }),
                       temperature: newReading.temp,
                       humidity: newReading.hum,
-                      hydrogen: newReading.h2,
                     };
                     
                     const updatedChartData = [...sensor.chartData, newChartData].slice(-1000); // Keep last 1000 points
@@ -135,7 +133,6 @@ export default function DashboardPage() {
                       ...sensor,
                       temperature: newReading.temp,
                       humidity: newReading.hum,
-                      hydrogen: newReading.h2,
                       safetyStatus: newReading.status,
                       timestamp: newReading.timestamp,
                       chartData: updatedChartData,
@@ -154,7 +151,6 @@ export default function DashboardPage() {
             timestamp: latestReading.timestamp,
             temperature: latestReading.temp,
             humidity: latestReading.hum,
-            hydrogen: latestReading.h2,
             safetyStatus: latestReading.status,
             chartData: chartData,
           };
@@ -211,12 +207,6 @@ export default function DashboardPage() {
                           title="Humidity"
                           value={sensor.humidity}
                           unit="%"
-                          status="NORMAL"
-                        />
-                         <DataCard
-                          title="Hydrogen"
-                          value={sensor.hydrogen}
-                          unit="ppm"
                           status="NORMAL"
                         />
                       </div>

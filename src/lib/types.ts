@@ -3,7 +3,6 @@ export interface SensorData {
   timestamp: number;
   temperature: number;
   humidity: number;
-  hydrogen: number;
   safetyStatus: "NORMAL" | "CAUTION" | "DANGER" | "ALERT!" | "WARNING";
 }
 
@@ -21,5 +20,4 @@ export interface TrendChartData {
   time: string;
   temperature: number;
   humidity: number;
-  hydrogen: number;
 }

@@ -31,10 +31,6 @@ const chartConfig = {
     label: "Humidity (%)",
     color: "hsl(var(--chart-2))",
   },
-   hydrogen: {
-    label: "Hydrogen (ppm)",
-    color: "hsl(var(--chart-3))",
-  },
 };
 
 export function TrendChart({ data }: TrendChartProps) {
@@ -78,13 +74,6 @@ export function TrendChart({ data }: TrendChartProps) {
             type="monotone"
             dataKey="humidity"
             stroke="var(--color-humidity)"
-            strokeWidth={2}
-            dot={false}
-          />
-           <Line
-            type="monotone"
-            dataKey="hydrogen"
-            stroke="var(--color-hydrogen)"
             strokeWidth={2}
             dot={false}
           />
