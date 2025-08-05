@@ -95,12 +95,12 @@ export default function DashboardPage() {
           const latestReading = readingsArray[readingsArray.length - 1];
 
           const chartData = readingsArray.map((reading) => ({
-            time: new Date(reading.timestamp).toLocaleTimeString("en-GB", {
+            time: new Date(reading.timestamp * 1000).toLocaleTimeString("en-GB", {
               timeZone: "Europe/London",
             }),
             temperature: reading.temp,
             humidity: reading.hum,
-            hydrogen: 0,
+            hydrogen: reading.h2,
           }));
 
           // Set up listener for new data
@@ -118,18 +118,18 @@ export default function DashboardPage() {
                 return prevSensors.map((sensor) => {
                   if (sensor.deviceId === newReading.deviceId) {
                     const newChartData = {
-                      time: new Date(newReading.timestamp).toLocaleTimeString("en-GB", {
+                      time: new Date(newReading.timestamp * 1000).toLocaleTimeString("en-GB", {
                         timeZone: "Europe/London",
                       }),
                       temperature: newReading.temp,
                       humidity: newReading.hum,
-                      hydrogen: 0,
+                      hydrogen: newReading.h2,
                     };
                     return {
                       ...sensor,
                       temperature: newReading.temp,
                       humidity: newReading.hum,
-                      hydrogen: 0,
+                      hydrogen: newReading.h2,
                       safetyStatus: newReading.status,
                       timestamp: newReading.timestamp,
                       chartData: [...sensor.chartData, newChartData],
@@ -148,7 +148,7 @@ export default function DashboardPage() {
             timestamp: latestReading.timestamp,
             temperature: latestReading.temp,
             humidity: latestReading.hum,
-            hydrogen: 0,
+            hydrogen: latestReading.h2,
             safetyStatus: latestReading.status,
             chartData: chartData,
           };
