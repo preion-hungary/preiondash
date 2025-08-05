@@ -1,11 +1,11 @@
 {
   "rules": {
     "sensors": {
+      ".read": "true",
+      ".write": "true",
       "$deviceId": {
         ".indexOn": "timestamp"
       }
-    },
-    ".read": "true",
-    ".write": "true"
+    }
   }
 }
