@@ -57,18 +57,20 @@ export default function DashboardPage() {
           const now = Date.now();
           let startTime = 0;
 
+          const nowSeconds = Math.floor(now / 1000);
+
           switch (timeRange) {
             case "1h":
-              startTime = now - 3600 * 1000;
+              startTime = nowSeconds - 3600;
               break;
             case "24h":
-              startTime = now - 86400 * 1000;
+              startTime = nowSeconds - 86400;
               break;
             case "7d":
-              startTime = now - 604800 * 1000;
+              startTime = nowSeconds - 604800;
               break;
             case "30d":
-              startTime = now - 2592000 * 1000;
+              startTime = nowSeconds - 2592000;
               break;
             case "all":
             default:
@@ -102,9 +104,9 @@ export default function DashboardPage() {
             humidity: reading.hum,
             hydrogen: reading.h2,
           }));
-
-          // Set up listener for new data
+          
           const lastTimestamp = latestReading.timestamp;
+
           const newReadingsQuery = query(
             deviceReadingsRef,
             orderByChild("timestamp"),
@@ -114,9 +116,10 @@ export default function DashboardPage() {
           const unsubscribe = onChildAdded(newReadingsQuery, (newReadingSnapshot) => {
             if (newReadingSnapshot.exists()) {
               const newReading: RtdbSensorData = newReadingSnapshot.val();
+              
               setSensors((prevSensors) => {
                 return prevSensors.map((sensor) => {
-                  if (sensor.deviceId === newReading.deviceId) {
+                  if (sensor.deviceId === deviceId) {
                     const newChartData = {
                       time: new Date(newReading.timestamp * 1000).toLocaleTimeString("en-GB", {
                         timeZone: "Europe/London",
@@ -125,6 +128,9 @@ export default function DashboardPage() {
                       humidity: newReading.hum,
                       hydrogen: newReading.h2,
                     };
+                    
+                    const updatedChartData = [...sensor.chartData, newChartData].slice(-1000); // Keep last 1000 points
+                    
                     return {
                       ...sensor,
                       temperature: newReading.temp,
@@ -132,7 +138,7 @@ export default function DashboardPage() {
                       hydrogen: newReading.h2,
                       safetyStatus: newReading.status,
                       timestamp: newReading.timestamp,
-                      chartData: [...sensor.chartData, newChartData],
+                      chartData: updatedChartData,
                     };
                   }
                   return sensor;
@@ -140,8 +146,8 @@ export default function DashboardPage() {
               });
             }
           });
+          
           unsubscribes.push(unsubscribe);
-
 
           return {
             deviceId: latestReading.deviceId,
@@ -205,6 +211,12 @@ export default function DashboardPage() {
                           title="Humidity"
                           value={sensor.humidity}
                           unit="%"
+                          status="NORMAL"
+                        />
+                         <DataCard
+                          title="Hydrogen"
+                          value={sensor.hydrogen}
+                          unit="ppm"
                           status="NORMAL"
                         />
                       </div>
