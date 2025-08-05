@@ -41,7 +41,7 @@ export default function DashboardPage() {
     setLoading(true);
     const devicesRef = ref(db, "sensors");
 
-    const fetchInitialData = async () => {
+    const fetchData = async () => {
       try {
         const deviceListSnapshot = await get(devicesRef);
         if (!deviceListSnapshot.exists()) {
@@ -74,11 +74,11 @@ export default function DashboardPage() {
               startTime = 0;
               break;
           }
-
+          
           const readingsQuery = query(
             deviceReadingsRef,
             orderByChild("timestamp"),
-            startAt(startTime)
+            startAt(startTime/1000)
           );
 
           const readingSnapshot = await get(readingsQuery);
@@ -94,7 +94,7 @@ export default function DashboardPage() {
           const latestReading = readingsArray[readingsArray.length - 1];
 
           const chartData = readingsArray.map((reading) => ({
-            time: new Date(reading.timestamp).toLocaleTimeString("en-GB", {
+            time: new Date(reading.timestamp * 1000).toLocaleTimeString("en-GB", {
               timeZone: "Europe/London",
             }),
             temperature: reading.temp,
@@ -123,58 +123,51 @@ export default function DashboardPage() {
       }
     };
 
-    fetchInitialData();
-  }, [timeRange]);
+    fetchData();
 
-  useEffect(() => {
-    const devicesRef = ref(db, "sensors");
+    // Setup realtime listeners for card data
     const unsubscribes: (() => void)[] = [];
-
-    const setupRealtimeListeners = async () => {
-      const deviceListSnapshot = await get(devicesRef);
-      if (!deviceListSnapshot.exists()) {
-        return;
-      }
-      const deviceIds = Object.keys(deviceListSnapshot.val());
-
-      deviceIds.forEach(deviceId => {
-        const deviceReadingsRef = ref(db, `sensors/${deviceId}`);
-        const realtimeQuery = query(deviceReadingsRef, limitToLast(1));
-        
-        const unsubscribe = onChildAdded(realtimeQuery, (snapshot) => {
-          if (snapshot.exists()) {
-            const newReading: RtdbSensorData = snapshot.val();
+    get(devicesRef).then((snapshot) => {
+        if (!snapshot.exists()) return;
+        const deviceIds = Object.keys(snapshot.val());
+        deviceIds.forEach(deviceId => {
+            const deviceReadingsRef = ref(db, `sensors/${deviceId}`);
+            const realtimeQuery = query(deviceReadingsRef, limitToLast(1));
             
-            setSensors(prevSensors => {
-              const sensorExists = prevSensors.some(s => s.deviceId === deviceId);
-              if (!sensorExists) return prevSensors;
+            const unsubscribe = onChildAdded(realtimeQuery, (snapshot) => {
+                if (snapshot.exists()) {
+                    const newReading: RtdbSensorData = snapshot.val();
+                    
+                    setSensors(prevSensors => {
+                        const sensorExists = prevSensors.some(s => s.deviceId === deviceId);
+                        if (!sensorExists && prevSensors.length > 0) return prevSensors;
 
-              return prevSensors.map(sensor => {
-                if (sensor.deviceId === deviceId) {
-                  // Only update card data, not chart data
-                  return {
-                    ...sensor,
-                    temperature: newReading.temp,
-                    humidity: newReading.hum,
-                    safetyStatus: newReading.status,
-                    timestamp: newReading.timestamp,
-                  };
+                        return prevSensors.map(sensor => {
+                            if (sensor.deviceId === deviceId) {
+                                return {
+                                    ...sensor,
+                                    temperature: newReading.temp,
+                                    humidity: newReading.hum,
+                                    safetyStatus: newReading.status,
+                                    timestamp: newReading.timestamp,
+                                };
+                            }
+                            return sensor;
+                        });
+                    });
                 }
-                return sensor;
-              });
             });
-          }
+            unsubscribes.push(unsubscribe);
         });
-        unsubscribes.push(unsubscribe);
-      });
-    }
+    });
 
-    setupRealtimeListeners();
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
     }
-  }, []);
+
+  }, [timeRange]);
+
 
   return (
     <SidebarProvider>
