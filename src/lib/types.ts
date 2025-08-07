@@ -14,10 +14,3 @@ export interface RtdbSensorData {
   h2: number;
   status: "NORMAL" | "CAUTION" | "DANGER" | "ALERT!" | "WARNING";
 }
-
-
-export interface TrendChartData {
-  time: string;
-  temperature: number;
-  humidity: number;
-}

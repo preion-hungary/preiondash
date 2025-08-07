@@ -12,9 +12,8 @@ import {
 } from "@/components/dashboard/sidebar-nav";
 import { Header } from "@/components/dashboard/header";
 import { DataCard } from "@/components/dashboard/data-card";
-import { TrendChart } from "@/components/dashboard/trend-chart";
 import { ControlsCard } from "@/components/dashboard/controls-card";
-import type { RtdbSensorData, SensorData, TrendChartData } from "@/lib/types";
+import type { RtdbSensorData, SensorData } from "@/lib/types";
 import { BarChart, Cpu } from "lucide-react";
 import { db } from "@/lib/firebase";
 import {
@@ -34,9 +33,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAwsIot } from "@/hooks/use-aws-iot";
 
 
-interface SensorDisplayData extends SensorData {
-  chartData: TrendChartData[];
-}
+interface SensorDisplayData extends SensorData {}
 
 function DashboardContent() {
   const [sensors, setSensors] = useState<SensorDisplayData[]>([]);
@@ -65,54 +62,14 @@ function DashboardContent() {
         const deviceIds = Object.keys(deviceListSnapshot.val());
         const sensorPromises = deviceIds.map(async (deviceId) => {
           const deviceReadingsRef = ref(db, `sensors/${deviceId}`);
-          const now = Date.now();
-          let startTime = 0;
-
-          switch (timeRange) {
-            case "1h":
-              startTime = now - 3600 * 1000;
-              break;
-            case "24h":
-              startTime = now - 86400 * 1000;
-              break;
-            case "7d":
-              startTime = now - 604800 * 1000;
-              break;
-            case "30d":
-              startTime = now - 2592000 * 1000;
-              break;
-            case "all":
-            default:
-              startTime = 0;
-              break;
-          }
           
-          const readingsQuery = query(
-            deviceReadingsRef,
-            orderByChild("timestamp"),
-            startAt(startTime)
-          );
+          const latestReadingQuery = query(deviceReadingsRef, limitToLast(1));
 
-          const readingSnapshot = await get(readingsQuery);
+          const readingSnapshot = await get(latestReadingQuery);
           if (!readingSnapshot.exists()) return null;
 
           const readingsData = readingSnapshot.val();
-          const readingsArray = Object.values<RtdbSensorData>(readingsData).sort(
-            (a, b) => a.timestamp - b.timestamp
-          );
-
-          if (readingsArray.length === 0) return null;
-
-          const latestReading = readingsArray[readingsArray.length - 1];
-
-          const chartData = readingsArray.map((reading) => ({
-            time: new Date(reading.timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
-            temperature: reading.temp,
-            humidity: reading.hum,
-          }));
+          const latestReading = Object.values<RtdbSensorData>(readingsData)[0];
 
           return {
             deviceId: latestReading.deviceId,
@@ -120,7 +77,6 @@ function DashboardContent() {
             temperature: latestReading.temp,
             humidity: latestReading.hum,
             safetyStatus: latestReading.status,
-            chartData: chartData,
           };
         });
 
@@ -155,11 +111,6 @@ function DashboardContent() {
                         const sensorIndex = prevSensors.findIndex(s => s.deviceId === deviceId);
 
                         if (sensorIndex === -1) {
-                           // This case handles if a new sensor is added while the page is open.
-                           // It fetches the historical data for the new sensor and adds it to the state.
-                           // For simplicity, we are not implementing the full historical fetch here,
-                           // but just adding the new sensor with its latest reading.
-                           // A full implementation would require a refetch or more complex state management.
                            return [
                              ...prevSensors,
                              {
@@ -168,7 +119,6 @@ function DashboardContent() {
                                 temperature: newReading.temp,
                                 humidity: newReading.hum,
                                 safetyStatus: newReading.status,
-                                chartData: [], // Initially no chart data
                              }
                            ].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
                         }
@@ -176,23 +126,12 @@ function DashboardContent() {
                         // Sensor exists, update it
                         return prevSensors.map(sensor => {
                             if (sensor.deviceId === deviceId) {
-                                // Add new data to chartData, maintaining a reasonable length
-                                const newChartData = [
-                                    ...sensor.chartData,
-                                    {
-                                        time: new Date(newReading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                                        temperature: newReading.temp,
-                                        humidity: newReading.hum,
-                                    }
-                                ].slice(-100); // Keep last 100 points for performance
-
                                 return {
                                     ...sensor,
                                     temperature: newReading.temp,
                                     humidity: newReading.hum,
                                     safetyStatus: newReading.status,
                                     timestamp: newReading.timestamp,
-                                    chartData: newChartData,
                                 };
                             }
                             return sensor;
@@ -208,7 +147,7 @@ function DashboardContent() {
       unsubscribes.forEach(unsub => unsub());
     }
 
-  }, [timeRange]);
+  }, []);
 
   return (
     <>
@@ -219,11 +158,11 @@ function DashboardContent() {
         <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto pb-20 md:pb-8">
           <Header timeRange={timeRange} onTimeRangeChange={setTimeRange} />
           <main className="mt-8">
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
               {sensors.map((sensor) => {
                 return (
                   <React.Fragment key={sensor.deviceId}>
-                    <div className="md:col-span-2 lg:col-span-1 xl:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
+                    <div className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
                       <h3 className="text-lg font-headline flex items-center gap-2">
                         <Cpu className="w-5 h-5 text-primary" />
                         {sensor.deviceId}
@@ -240,21 +179,12 @@ function DashboardContent() {
                         />
                       </div>
                     </div>
-                     <div className="md:col-span-2 lg:col-span-1 xl:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
+                     <div className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
                        <ControlsCard
                          deviceId={sensor.deviceId}
                          onCommand={handleCommand}
                        />
                      </div>
-                    <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col">
-                      <h3 className="text-lg font-headline flex items-center gap-2 mb-4">
-                        <BarChart className="w-5 h-5 text-primary" />
-                        Data Trends
-                      </h3>
-                      <div className="flex-grow">
-                        <TrendChart data={sensor.chartData} />
-                      </div>
-                    </div>
                   </React.Fragment>
                 );
               })}
@@ -267,7 +197,7 @@ function DashboardContent() {
             {!loading && sensors.length === 0 && (
               <div className="flex items-center justify-center h-64">
                 <p className="text-muted-foreground">
-                  No sensor data found for the selected time range.
+                  No sensor data found.
                 </p>
               </div>
             )}
