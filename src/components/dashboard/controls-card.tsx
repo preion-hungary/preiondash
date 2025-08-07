@@ -33,21 +33,25 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
       name: "Change Slide",
       command: "change_slide",
       icon: Film,
+      disabled: false,
     },
     {
       name: "Flash LED",
       command: "flash_led",
       icon: Zap,
+      disabled: false,
     },
     {
       name: "Sync Time",
       command: "sync_time",
       icon: Clock,
+      disabled: true,
     },
      {
       name: "Get Status",
       command: "get_status",
       icon: RefreshCw,
+      disabled: true,
     }
   ] as const;
 
@@ -63,11 +67,12 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
               <Button
                 key={control.command}
                 variant="outline"
-                className="group flex flex-col h-full w-full items-center justify-center p-2 transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50"
+                className="group flex flex-col h-full w-full items-center justify-center p-2 transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50 disabled:bg-secondary/50 disabled:cursor-not-allowed"
                 onClick={() => onCommand(control.command, deviceId)}
+                disabled={control.disabled}
               >
-                  <control.icon className="w-6 h-6 mb-2 text-muted-foreground transition-colors group-hover:text-primary" />
-                  <span className="text-center text-xs">{control.name}</span>
+                  <control.icon className="w-6 h-6 mb-2 text-muted-foreground transition-colors group-hover:text-primary group-disabled:text-muted-foreground/50" />
+                  <span className="text-center text-xs group-disabled:text-muted-foreground/50">{control.name}</span>
               </Button>
             ))}
         </div>
