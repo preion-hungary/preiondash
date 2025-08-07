@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   SidebarProvider,
@@ -28,11 +28,38 @@ import {
   KeyRound,
   ChevronRight,
   ShieldCheck,
+  Cpu,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
+import { Card, CardContent } from "@/components/ui/card";
 
 function DevicesContent() {
   const isMobile = useIsMobile();
+  const [devices, setDevices] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const devicesRef = ref(db, "sensors");
+    const unsubscribe = onValue(
+      devicesRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setDevices(Object.keys(snapshot.val()));
+        } else {
+          setDevices([]);
+        }
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Firebase read failed: ", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const onboardingSteps = [
     {
@@ -119,23 +146,43 @@ function DevicesContent() {
                     </Button>
                   </div>
                   <div className="mt-2 flex items-start gap-3 p-3 bg-background rounded-lg border">
-                     <ShieldCheck className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                     <div>
-                        <h5 className="font-semibold text-sm text-foreground">Your Credentials are Safe</h5>
-                        <p className="text-xs text-muted-foreground">
-                          You are providing your Wi-Fi details directly to your device, not to us. Even if we could steal them, it's highly unlikely we'd camp outside your house just to syphon your Netflix.
-                        </p>
-                     </div>
+                    <ShieldCheck className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                    <div>
+                      <h5 className="font-semibold text-sm text-foreground">
+                        Your Credentials are Safe
+                      </h5>
+                      <p className="text-xs text-muted-foreground">
+                        You are providing your Wi-Fi details directly to your
+                        device, not to us. Even if we could steal them, it's
+                        highly unlikely we'd camp outside your house just to
+                        syphon your Netflix.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </DialogContent>
             </Dialog>
           </header>
           <main className="mt-8">
-            <div className="flex items-center justify-center h-64 border-2 border-dashed border-border/30 rounded-xl">
-              <p className="text-muted-foreground">
-                Your device list will appear here.
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                 <p className="text-muted-foreground col-span-full">Loading devices...</p>
+              ) : devices.length > 0 ? (
+                devices.map((deviceId) => (
+                  <Card key={deviceId}>
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <Cpu className="w-8 h-8 text-primary" />
+                      <p className="font-semibold text-foreground">{deviceId}</p>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full flex items-center justify-center h-64 border-2 border-dashed border-border/30 rounded-xl">
+                  <p className="text-muted-foreground">
+                    No devices found. Click "Add Device" to get started.
+                  </p>
+                </div>
+              )}
             </div>
           </main>
         </div>
