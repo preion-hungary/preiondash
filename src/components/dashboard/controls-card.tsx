@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -12,7 +13,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Zap,
   Film,
@@ -33,25 +33,22 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
       name: "Change Slide",
       command: "change_slide",
       icon: Film,
-      variant: "outline",
     },
     {
       name: "Flash LED",
       command: "flash_led",
       icon: Zap,
-      variant: "outline",
     },
     {
       name: "Sync Time",
       command: "sync_time",
       icon: Clock,
-      variant: "outline",
     },
   ] as const;
 
   return (
     <>
-      <h3 className="text-lg font-headline flex items-center gap-2 mb-4">
+      <h3 className="text-lg font-headline flex items-center gap-2">
         <Zap className="w-5 h-5 text-primary" />
         Device Controls
       </h3>
@@ -59,26 +56,26 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
         {controls.map((control) => (
           <Button
             key={control.command}
-            variant={control.variant as any}
-            className="justify-between"
+            variant="outline"
+            className="group justify-between transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50 hover:pl-6"
             onClick={() => onCommand(control.command, deviceId)}
           >
             <div className="flex items-center gap-2">
-              <control.icon className="w-4 h-4" />
+              <control.icon className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-primary" />
               <span>{control.name}</span>
             </div>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 opacity-50 transition-transform group-hover:translate-x-1" />
           </Button>
         ))}
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="justify-between">
+            <Button variant="destructive" className="group justify-between transition-all duration-200 ease-in-out hover:bg-destructive/80 hover:pl-6">
               <div className="flex items-center gap-2">
                 <WifiOff className="w-4 h-4" />
                 <span>Reset Wifi</span>
               </div>
-              <AlertTriangle className="w-4 h-4" />
+              <AlertTriangle className="w-4 h-4 transition-transform group-hover:scale-110" />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
