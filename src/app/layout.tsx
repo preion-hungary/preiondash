@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -29,6 +30,10 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
           rel="stylesheet"
+        />
+        <Script
+          src="https://sdk.amazonaws.com/js/aws-sdk-2.1350.0.min.js"
+          strategy="beforeInteractive"
         />
       </head>
       <body className="font-body antialiased">
