@@ -18,8 +18,8 @@ import {
   Film,
   WifiOff,
   Clock,
-  ChevronRight,
   AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 
 interface ControlsCardProps {
@@ -44,6 +44,11 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
       command: "sync_time",
       icon: Clock,
     },
+     {
+      name: "Get Status",
+      command: "get_status",
+      icon: RefreshCw,
+    }
   ] as const;
 
   return (
@@ -52,30 +57,28 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
         <Zap className="w-5 h-5 text-primary" />
         Device Controls
       </h3>
-      <div className="flex flex-col gap-3">
-        {controls.map((control) => (
-          <Button
-            key={control.command}
-            variant="outline"
-            className="group justify-between transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50 hover:pl-6"
-            onClick={() => onCommand(control.command, deviceId)}
-          >
-            <div className="flex items-center gap-2">
-              <control.icon className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-primary" />
-              <span>{control.name}</span>
-            </div>
-            <ChevronRight className="w-4 h-4 opacity-50 transition-transform group-hover:translate-x-1" />
-          </Button>
-        ))}
+      <div className="flex flex-col gap-4 flex-grow">
+        <div className="grid grid-cols-2 gap-3 flex-grow">
+            {controls.map((control) => (
+              <Button
+                key={control.command}
+                variant="outline"
+                className="group flex flex-col h-full w-full items-center justify-center p-2 transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50"
+                onClick={() => onCommand(control.command, deviceId)}
+              >
+                  <control.icon className="w-6 h-6 mb-2 text-muted-foreground transition-colors group-hover:text-primary" />
+                  <span className="text-center text-xs">{control.name}</span>
+              </Button>
+            ))}
+        </div>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="group justify-between transition-all duration-200 ease-in-out hover:bg-destructive/80 hover:pl-6">
+            <Button variant="destructive" className="w-full group justify-center transition-all duration-200 ease-in-out hover:bg-destructive/80">
               <div className="flex items-center gap-2">
                 <WifiOff className="w-4 h-4" />
                 <span>Reset Wifi</span>
               </div>
-              <AlertTriangle className="w-4 h-4 transition-transform group-hover:scale-110" />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
