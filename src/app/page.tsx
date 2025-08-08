@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -160,7 +161,7 @@ function DashboardContent() {
                   <React.Fragment key={sensor.deviceId}>
                     <div 
                       className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 bg-cover bg-center"
-                      style={{backgroundImage: "url('https://placehold.co/600x400.png')"}}
+                      style={{backgroundImage: "url('https://images.unsplash.com/photo-1593344484962-796b931de8de?q=80&w=1920&auto=format&fit=crop')"}}
                       data-ai-hint="circuit board"
                     >
                       <div className="rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 h-full">
@@ -185,7 +186,7 @@ function DashboardContent() {
                     </div>
                      <div 
                         className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 bg-cover bg-center"
-                        style={{backgroundImage: "url('https://placehold.co/600x400.png')"}}
+                        style={{backgroundImage: "url('https://images.unsplash.com/photo-1604147706283-d7119b5b822c?q=80&w=1920&auto=format&fit=crop')"}}
                         data-ai-hint="abstract geometric"
                       >
                        <div className="rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 h-full">
