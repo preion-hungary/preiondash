@@ -29,6 +29,7 @@ import {
 } from "@/components/dashboard/time-range-selector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAwsIot } from "@/hooks/use-aws-iot";
+import { Card } from "@/components/ui/card";
 
 
 interface SensorDisplayData extends SensorData {}
@@ -155,48 +156,33 @@ function DashboardContent() {
         <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto pb-20 md:pb-8">
           <Header timeRange={timeRange} onTimeRangeChange={setTimeRange} />
           <main className="mt-8">
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
               {sensors.map((sensor) => {
                 return (
-                  <React.Fragment key={sensor.deviceId}>
-                    <div 
-                      className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 bg-cover bg-center"
-                      style={{backgroundImage: "url('https://images.unsplash.com/photo-1593344484962-796b931de8de?q=80&w=1920&auto=format&fit=crop')"}}
-                      data-ai-hint="circuit board"
-                    >
-                      <div className="rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 h-full">
-
-                        <h3 className="text-lg font-headline flex items-center gap-2">
-                          <Cpu className="w-5 h-5 text-primary" />
-                          {sensor.deviceId}
-                        </h3>
-                        <p className="text-sm text-muted-foreground italic">
-                          Status: {sensor.safetyStatus}
-                        </p>
-                        <div className="flex-grow">
-                          <DataCard
-                            temperature={sensor.temperature}
-                            humidity={sensor.humidity}
-                            tempStatus="NORMAL"
-                            humStatus="NORMAL"
-                          />
-                        </div>
-                      </div>
-
+                  <Card
+                    key={sensor.deviceId}
+                    className="lg:col-span-1 p-4 flex flex-col gap-4"
+                  >
+                    <h3 className="text-lg font-headline flex items-center gap-2">
+                      <Cpu className="w-5 h-5 text-primary" />
+                      {sensor.deviceId}
+                    </h3>
+                    <p className="text-sm text-muted-foreground italic">
+                      Status: {sensor.safetyStatus}
+                    </p>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                       <DataCard
+                          temperature={sensor.temperature}
+                          humidity={sensor.humidity}
+                          tempStatus="NORMAL"
+                          humStatus="NORMAL"
+                        />
+                       <ControlsCard
+                        deviceId={sensor.deviceId}
+                        onCommand={handleCommand}
+                       />
                     </div>
-                     <div 
-                        className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 bg-cover bg-center"
-                        style={{backgroundImage: "url('https://images.unsplash.com/photo-1604147706283-d7119b5b822c?q=80&w=1920&auto=format&fit=crop')"}}
-                        data-ai-hint="abstract geometric"
-                      >
-                       <div className="rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 h-full">
-                         <ControlsCard
-                          deviceId={sensor.deviceId}
-                          onCommand={handleCommand}
-                         />
-                       </div>
-                     </div>
-                  </React.Fragment>
+                  </Card>
                 );
               })}
             </div>
