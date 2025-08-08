@@ -39,11 +39,15 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
   const isMobile = useIsMobile();
-  const { sendCommand } = useAwsIot();
+  const { sendCommand, sendJsonCommand } = useAwsIot();
 
   const handleCommand = async (command: string, deviceId: string) => {
     await sendCommand(command, deviceId);
   };
+  
+  const handleJsonCommand = async (payload: object, deviceId: string) => {
+    await sendJsonCommand(payload, deviceId);
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -161,7 +165,7 @@ function DashboardContent() {
                 return (
                   <Card
                     key={sensor.deviceId}
-                    className="p-4 flex flex-col gap-4"
+                    className="p-4 flex flex-col gap-4 overflow-hidden"
                   >
                     <h3 className="text-lg font-headline flex items-center gap-2">
                       <Cpu className="w-5 h-5 text-primary" />
@@ -180,6 +184,7 @@ function DashboardContent() {
                        <ControlsCard
                         deviceId={sensor.deviceId}
                         onCommand={handleCommand}
+                        onJsonCommand={handleJsonCommand}
                        />
                     </div>
                   </Card>

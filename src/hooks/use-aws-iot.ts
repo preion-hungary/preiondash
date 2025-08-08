@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useToast } from "@/hooks/use-toast";
@@ -26,8 +27,8 @@ export function useAwsIot() {
     }
   }, []);
 
-  const sendCommand = (command: string, deviceId: string) => {
-    return new Promise<void>((resolve, reject) => {
+  const sendJsonCommand = (payload: object, deviceId: string) => {
+     return new Promise<void>((resolve, reject) => {
       if (!window.AWS) {
         const errorMsg = "AWS SDK not loaded.";
         console.error(errorMsg);
@@ -61,7 +62,6 @@ export function useAwsIot() {
         });
 
         const topic = `preion/control/${deviceId}/commands`;
-        const payload = { command };
         
         const params = {
           topic: topic,
@@ -86,14 +86,19 @@ export function useAwsIot() {
           } else {
             toast({
               title: "Command Sent Successfully",
-              description: `Command "${command}" sent to ${deviceId}.`,
+              description: `Payload sent to ${deviceId}.`,
             });
             resolve();
           }
         });
       });
     });
+  }
+
+  const sendCommand = (command: string, deviceId: string) => {
+    const payload = { command };
+    return sendJsonCommand(payload, deviceId);
   };
 
-  return { sendCommand };
+  return { sendCommand, sendJsonCommand };
 }

@@ -14,19 +14,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { MessageForm } from "./message-form";
+import {
   Zap,
   Film,
   WifiOff,
   Clock,
   RefreshCw,
+  MessageSquare,
 } from "lucide-react";
 
 interface ControlsCardProps {
   deviceId: string;
   onCommand: (command: string, deviceId: string) => void;
+  onJsonCommand: (payload: object, deviceId: string) => void;
 }
 
-export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
+export function ControlsCard({ deviceId, onCommand, onJsonCommand }: ControlsCardProps) {
   const controls = [
     {
       name: "Change Slide",
@@ -75,6 +86,25 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
               </Button>
             ))}
         </div>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <MessageSquare className="mr-2" />
+              Send Message
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Send a message to {deviceId}</DialogTitle>
+              <DialogDescription>
+                Compose a message to be displayed on the device's screen.
+                You can use a preset or write your own.
+              </DialogDescription>
+            </DialogHeader>
+            <MessageForm deviceId={deviceId} onJsonCommand={onJsonCommand} />
+          </DialogContent>
+        </Dialog>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
