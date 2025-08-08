@@ -18,7 +18,6 @@ import {
   Film,
   WifiOff,
   Clock,
-  AlertTriangle,
   RefreshCw,
 } from "lucide-react";
 
@@ -67,7 +66,7 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
               <Button
                 key={control.command}
                 variant="outline"
-                className="group flex flex-col h-full w-full items-center justify-center p-2 transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50 disabled:bg-secondary/50 disabled:cursor-not-allowed"
+                className="group flex flex-col aspect-square h-full w-full items-center justify-center p-2 transition-all duration-200 ease-in-out hover:bg-primary/10 hover:border-primary/50 disabled:bg-secondary/50 disabled:cursor-not-allowed"
                 onClick={() => onCommand(control.command, deviceId)}
                 disabled={control.disabled}
               >

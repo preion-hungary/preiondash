@@ -14,16 +14,13 @@ import { Header } from "@/components/dashboard/header";
 import { DataCard } from "@/components/dashboard/data-card";
 import { ControlsCard } from "@/components/dashboard/controls-card";
 import type { RtdbSensorData, SensorData } from "@/lib/types";
-import { BarChart, Cpu } from "lucide-react";
+import { Cpu } from "lucide-react";
 import { db } from "@/lib/firebase";
 import {
   ref,
-  onValue,
   get,
   query,
   limitToLast,
-  orderByChild,
-  startAt,
   onChildAdded,
 } from "firebase/database";
 import {
@@ -94,7 +91,6 @@ function DashboardContent() {
 
     fetchData();
 
-    // Setup realtime listeners for card data
     const unsubscribes: (() => void)[] = [];
     get(devicesRef).then((snapshot) => {
         if (!snapshot.exists()) return;
@@ -162,28 +158,42 @@ function DashboardContent() {
               {sensors.map((sensor) => {
                 return (
                   <React.Fragment key={sensor.deviceId}>
-                    <div className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
-                      <h3 className="text-lg font-headline flex items-center gap-2">
-                        <Cpu className="w-5 h-5 text-primary" />
-                        {sensor.deviceId}
-                      </h3>
-                      <p className="text-sm text-muted-foreground italic">
-                        Status: {sensor.safetyStatus}
-                      </p>
-                      <div className="flex-grow">
-                         <DataCard
-                          temperature={sensor.temperature}
-                          humidity={sensor.humidity}
-                          tempStatus="NORMAL"
-                          humStatus="NORMAL"
-                        />
+                    <div 
+                      className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 bg-cover bg-center"
+                      style={{backgroundImage: "url('https://placehold.co/600x400.png')"}}
+                      data-ai-hint="circuit board"
+                    >
+                      <div className="rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 h-full">
+
+                        <h3 className="text-lg font-headline flex items-center gap-2">
+                          <Cpu className="w-5 h-5 text-primary" />
+                          {sensor.deviceId}
+                        </h3>
+                        <p className="text-sm text-muted-foreground italic">
+                          Status: {sensor.safetyStatus}
+                        </p>
+                        <div className="flex-grow">
+                          <DataCard
+                            temperature={sensor.temperature}
+                            humidity={sensor.humidity}
+                            tempStatus="NORMAL"
+                            humStatus="NORMAL"
+                          />
+                        </div>
                       </div>
+
                     </div>
-                     <div className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4">
-                       <ControlsCard
-                         deviceId={sensor.deviceId}
-                         onCommand={handleCommand}
-                       />
+                     <div 
+                        className="lg:col-span-1 rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 bg-cover bg-center"
+                        style={{backgroundImage: "url('https://placehold.co/600x400.png')"}}
+                        data-ai-hint="abstract geometric"
+                      >
+                       <div className="rounded-xl bg-card/70 backdrop-blur-sm border border-border/20 p-4 flex flex-col gap-4 h-full">
+                         <ControlsCard
+                          deviceId={sensor.deviceId}
+                          onCommand={handleCommand}
+                         />
+                       </div>
                      </div>
                   </React.Fragment>
                 );
