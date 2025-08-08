@@ -153,7 +153,7 @@ function DashboardContent() {
         <DashboardSidebarNav />
       </Sidebar>
       <SidebarInset>
-        <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto pb-20 md:pb-8">
+        <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto pb-24 md:pb-8">
           <Header timeRange={timeRange} onTimeRangeChange={setTimeRange} />
           <main className="mt-8">
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
@@ -161,7 +161,7 @@ function DashboardContent() {
                 return (
                   <Card
                     key={sensor.deviceId}
-                    className="lg:col-span-1 p-4 flex flex-col gap-4"
+                    className="p-4 flex flex-col gap-4"
                   >
                     <h3 className="text-lg font-headline flex items-center gap-2">
                       <Cpu className="w-5 h-5 text-primary" />
