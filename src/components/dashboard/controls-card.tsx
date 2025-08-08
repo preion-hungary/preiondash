@@ -60,7 +60,7 @@ export function ControlsCard({ deviceId, onCommand }: ControlsCardProps) {
         <Zap className="w-5 h-5 text-primary" />
         Device Controls
       </h3>
-      <div className="flex flex-col gap-4 flex-grow">
+      <div className="flex flex-col gap-4 flex-grow mb-4">
         <div className="grid grid-cols-2 gap-3 flex-grow">
             {controls.map((control) => (
               <Button
