@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, from "react";
 import Link from "next/link";
 import {
   SidebarProvider,
@@ -34,13 +35,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { db } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
 import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function DevicesContent() {
   const isMobile = useIsMobile();
-  const [devices, setDevices] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [devices, setDevices] = React.useState<string[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const devicesRef = ref(db, "sensors");
     const unsubscribe = onValue(
       devicesRef,
@@ -100,8 +102,8 @@ function DevicesContent() {
                   Add Device
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[480px]">
-                <DialogHeader>
+              <DialogContent className="sm:max-w-[480px] grid-rows-[auto,1fr] p-0 max-h-[90svh]">
+                <DialogHeader className="p-6 pb-0">
                   <DialogTitle className="text-2xl font-headline">
                     Onboard a New Device
                   </DialogTitle>
@@ -110,69 +112,75 @@ function DevicesContent() {
                     network.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-4 py-4">
-                  {onboardingSteps.map((step, index) => (
-                    <div key={index} className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                        <step.icon className="w-5 h-5" />
+                <ScrollArea className="h-full">
+                  <div className="flex flex-col gap-4 p-6 pt-4">
+                    {onboardingSteps.map((step, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                          <step.icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{step.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {step.description}
+                          </p>
+                        </div>
                       </div>
+                    ))}
+
+                    <div className="mt-4 p-4 bg-secondary rounded-lg">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <KeyRound className="w-5 h-5 text-primary" />
+                        Provide Wi-Fi Credentials
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Once connected to the device's hotspot, click the link
+                        below to open the configuration page.
+                      </p>
+                      <Button asChild className="w-full justify-between">
+                        <a
+                          href="http://192.168.4.1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Open Configuration Page
+                          <ChevronRight />
+                        </a>
+                      </Button>
+                    </div>
+                    <div className="mt-2 flex items-start gap-3 p-3 bg-background rounded-lg border">
+                      <ShieldCheck className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
                       <div>
-                        <h4 className="font-semibold">{step.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {step.description}
+                        <h5 className="font-semibold text-sm text-foreground">
+                          Your Credentials are Safe
+                        </h5>
+                        <p className="text-xs text-muted-foreground">
+                          You are providing your Wi-Fi details directly to your
+                          device, not to us. Even if we could steal them, it's
+                          highly unlikely we'd camp outside your house just to
+                          syphon your Netflix.
                         </p>
                       </div>
                     </div>
-                  ))}
-
-                  <div className="mt-4 p-4 bg-secondary rounded-lg">
-                    <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <KeyRound className="w-5 h-5 text-primary" />
-                      Provide Wi-Fi Credentials
-                    </h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Once connected to the device's hotspot, click the link
-                      below to open the configuration page.
-                    </p>
-                    <Button asChild className="w-full justify-between">
-                      <a
-                        href="http://192.168.4.1"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Open Configuration Page
-                        <ChevronRight />
-                      </a>
-                    </Button>
                   </div>
-                  <div className="mt-2 flex items-start gap-3 p-3 bg-background rounded-lg border">
-                    <ShieldCheck className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                    <div>
-                      <h5 className="font-semibold text-sm text-foreground">
-                        Your Credentials are Safe
-                      </h5>
-                      <p className="text-xs text-muted-foreground">
-                        You are providing your Wi-Fi details directly to your
-                        device, not to us. Even if we could steal them, it's
-                        highly unlikely we'd camp outside your house just to
-                        syphon your Netflix.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                </ScrollArea>
               </DialogContent>
             </Dialog>
           </header>
           <main className="mt-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading ? (
-                 <p className="text-muted-foreground col-span-full">Loading devices...</p>
+                <p className="text-muted-foreground col-span-full">
+                  Loading devices...
+                </p>
               ) : devices.length > 0 ? (
                 devices.map((deviceId) => (
                   <Card key={deviceId}>
                     <CardContent className="p-4 flex items-center gap-4">
                       <Cpu className="w-8 h-8 text-primary" />
-                      <p className="font-semibold text-foreground">{deviceId}</p>
+                      <p className="font-semibold text-foreground">
+                        {deviceId}
+                      </p>
                     </CardContent>
                   </Card>
                 ))
